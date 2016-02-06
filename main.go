@@ -17,9 +17,8 @@ func main() {
 
 	// временное решение. Нажатие Enter закрывает программу
 	var response string
-	var test1 string
-	test1 = "aaa"
-	fmt.Println("Press Enter", test1)
+
+	fmt.Println("Press Enter")
 	_, _ = fmt.Scanln(&response)
 
 	// Stop program
