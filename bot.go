@@ -16,15 +16,8 @@ type bot struct {
 	Login string
 	Password string
 	Connected bool
-}
-
-// infBot Служебная структура для обмена данными с веб-интерфейсом
-type infBot struct {
-	ID int
-	Name string
-	Login string
-	Password string
-	Connected bool
+	UseProxy bool
+	AddressProxy string
 }
 
 func init() {
@@ -75,22 +68,24 @@ func delBot(id int) error {
 }
 
 // lstBot Функция подготавливает и возвращает массив с информацией по текущим ботам
-func lstBot() ([]infBot, error) {
+func lstBot() ([]map[string]string, error) {
 	mlog.Trace("Функция: lstBot")
-	list := make([]infBot, len(mbot))
+	list := make([]map[string]string, len(mbot))
 	i := 0
 	for id, bot := range mbot {
-		inf := infBot{}
-		inf.ID = id
-		inf.Name = bot.Name
-		list[i] =inf
+		inf := make(map[string]string)
+		inf["id"] = strconv.Itoa(id)
+		inf["name"] = bot.Name
+		inf["login"] = bot.Login
+		inf["password"] = bot.Password
+		list[i] = inf
 		i++
 	}
 	return list, nil
 }
 
 // updBot Функция обновляет информацию бота по указанному идентификатору
-func updBot(id int, inf infBot) error {
+func updBot(id int, inf map[string]interface{}) error {
 	mlog.Trace("Функция: updBot")
 	var err error
 	bot, ok := mbot[id]
@@ -99,9 +94,34 @@ func updBot(id int, inf infBot) error {
 		mlog.Error(err)
 		return err
 	}
-	bot.Name = inf.Name
-	bot.Login = inf.Login
-	bot.Password = inf.Password
+	for key, value := range inf {
+		switch key {
+		case "name":
+			valueStr, ok := value.(string)
+			if ok {
+				bot.Name = valueStr
+
+			}else {
+				mlog.Trace("Ошибка при приведении значения к строке")
+			}
+		case "login":
+			valueStr, ok := value.(string)
+			if ok {
+				bot.Login = valueStr
+
+			}else {
+				mlog.Trace("Ошибка при приведении значения к строке")
+			}
+		case "password":
+			valueStr, ok := value.(string)
+			if ok {
+				bot.Password = valueStr
+
+			}else {
+				mlog.Trace("Ошибка при приведении значения к строке")
+			}
+		}
+	}
 	mbot[id] = bot
 	mlog.Trace("Функция: updBot. Обновлена информация бота с id = %d.", id)
 	return nil

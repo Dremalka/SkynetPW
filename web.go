@@ -80,11 +80,13 @@ func updateBot(c *echo.Context) error {
 	if err != nil {
 		mlog.Error(err)
 	}else{
-		inf := infBot{}
-		inf.ID = id
-		inf.Name = c.Form("name")
-		inf.Login = c.Form("login")
-		inf.Password = c.Form("password")
+		inf := make(map[string]interface{})
+		// TODO перед заполнением проверить наличие переданных значений. И заполнять только те, которые пришли с запросом
+		inf["id"] = id
+		inf["name"] = c.Form("name")
+		inf["login"] = c.Form("login")
+		inf["password"] = c.Form("password")
+
 		mlog.Trace("Функция: updateBot. Получены данные ", inf)
 		if err := updBot(id, inf); err != nil {
 			mlog.Error(err)
