@@ -107,6 +107,7 @@ func updBot(id int, inf infBot) error {
 	return nil
 }
 
+// connectBotToServer Функция получает uid и token с сайта mail.ru и подключается к игровому серверу
 func connectBotToServer(id int) error {
 	mlog.Trace("Функция: connectBotToServer")
 	var err error
@@ -120,12 +121,19 @@ func connectBotToServer(id int) error {
 		mlog.Warning("Бот уже подключен к серверу.")
 		return nil
 	}
+	uid, uid2, token, err := getUidAndToken(bot.Login, bot.Password)
+	if err != nil {
+		mlog.Error(err)
+		return err
+	}
+	mlog.Trace("Функция: connectBotToServer. uid = %v, uid2 = %v, token = %v", uid, uid2, token)
 	bot.Connected = true
 	mbot[id] = bot
 	mlog.Trace("Функция: connectBotToServer. Бот подключен к серверу.")
 	return nil
 }
 
+// disconnectBotFromServer Функция отключает бота от игрового сервера
 func disconnectBotFromServer(id int) error {
 	mlog.Trace("Функция: disconnectBotFromServer")
 	var err error
