@@ -6,6 +6,7 @@ import (
 	mid "github.com/labstack/echo/middleware"
 	"net/http"
 	"strconv"
+	"fmt"
 )
 
 func CreateWeb() <-chan struct{} {
@@ -24,6 +25,7 @@ func router() {
 		//api
 		e.Get("/api/bots", listBot)         // вывести json-список текущих ботов
 		e.Post("/api/bots", createBot)      // создать нового бота
+		e.Put("/api/bot/:id", updateBot)   // обновить бота
 		e.Delete("/api/bot/:id", deleteBot) // удалить бота
 
 		e.Run(":8080")
@@ -33,7 +35,14 @@ func router() {
 // listBot сформировать и выдать в формате json список текущих ботов
 func listBot(c *echo.Context) error {
 	mlog.Trace("Функция: listBot")
-	return c.String(http.StatusOK, "ok")
+	var err error
+	list, err := lstBot()	// запросить список ботов
+	mlog.Trace(fmt.Sprintf("Функция: listBot. list = %v, err = %v", list, err))
+	if err != nil {
+		mlog.Error(err)
+		return c.JSON(http.StatusConflict, nil)
+	}
+	return c.JSON(http.StatusOK, list)
 }
 
 // createBot Создать бота и вернуть присвоенный ему ID
@@ -61,4 +70,21 @@ func deleteBot(c *echo.Context) error {
 		}
 	}
 	return c.String(http.StatusOK, "ok")	// сообщить, что бот удален
+}
+
+func updateBot(c *echo.Context) error {
+	mlog.Trace("Функция: updateBot")
+	id, err := strconv.Atoi(c.Param("id"))	// преобразовать в int
+	if err != nil {
+		mlog.Error(err)
+	}else{
+		inf := infBot{}
+		inf.ID = id
+		inf.Name = c.Form("name")
+		mlog.Trace("Функция: updateBot. Получены данные ", inf)
+		if err := updBot(id, inf); err != nil {
+			mlog.Error(err)
+		}
+	}
+	return c.String(http.StatusOK, "ok")	// сообщить, что бот изменен
 }
