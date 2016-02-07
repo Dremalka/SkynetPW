@@ -26,6 +26,8 @@ func router() {
 		e.Get("/api/bots", listBot)         // вывести json-список текущих ботов
 		e.Post("/api/bots", createBot)      // создать нового бота
 		e.Put("/api/bot/:id", updateBot)   // обновить бота
+		e.Put("/api/bot/:id/connect", connectToServer)   // подключить бота к серверу
+		e.Put("/api/bot/:id/disconnect", disconnectFromServer)   // отключить бота от сервера
 		e.Delete("/api/bot/:id", deleteBot) // удалить бота
 
 		e.Run(":8080")
@@ -81,8 +83,36 @@ func updateBot(c *echo.Context) error {
 		inf := infBot{}
 		inf.ID = id
 		inf.Name = c.Form("name")
+		inf.Login = c.Form("login")
+		inf.Password = c.Form("password")
 		mlog.Trace("Функция: updateBot. Получены данные ", inf)
 		if err := updBot(id, inf); err != nil {
+			mlog.Error(err)
+		}
+	}
+	return c.String(http.StatusOK, "ok")	// сообщить, что бот изменен
+}
+
+func connectToServer(c *echo.Context) error {
+	mlog.Trace("Функция: connectToServer")
+	id, err := strconv.Atoi(c.Param("id"))	// преобразовать в int
+	if err != nil {
+		mlog.Error(err)
+	}else{
+		if err := connectBotToServer(id); err != nil {
+			mlog.Error(err)
+		}
+	}
+	return c.String(http.StatusOK, "ok")	// сообщить, что бот изменен
+}
+
+func disconnectFromServer(c *echo.Context) error {
+	mlog.Trace("Функция: disconnectFromServer")
+	id, err := strconv.Atoi(c.Param("id"))	// преобразовать в int
+	if err != nil {
+		mlog.Error(err)
+	}else{
+		if err := disconnectBotFromServer(id); err != nil {
 			mlog.Error(err)
 		}
 	}

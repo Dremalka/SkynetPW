@@ -7,12 +7,25 @@ import (
 	"strconv"
 )
 
+var mbot map[int]bot
+
+
 type bot struct {
 	ID int
 	Name string
+	Login string
+	Password string
+	Connected bool
 }
 
-var mbot map[int]bot
+// infBot Служебная структура для обмена данными с веб-интерфейсом
+type infBot struct {
+	ID int
+	Name string
+	Login string
+	Password string
+	Connected bool
+}
 
 func init() {
 	// при необходимости иницилизировать map
@@ -61,12 +74,6 @@ func delBot(id int) error {
 	return nil
 }
 
-// infBot Служебная структура для обмена данными с веб-интерфейсом
-type infBot struct {
-	ID int
-	Name string
-}
-
 // lstBot Функция подготавливает и возвращает массив с информацией по текущим ботам
 func lstBot() ([]infBot, error) {
 	mlog.Trace("Функция: lstBot")
@@ -93,7 +100,47 @@ func updBot(id int, inf infBot) error {
 		return err
 	}
 	bot.Name = inf.Name
+	bot.Login = inf.Login
+	bot.Password = inf.Password
 	mbot[id] = bot
 	mlog.Trace("Функция: updBot. Обновлена информация бота с id = %d.", id)
+	return nil
+}
+
+func connectBotToServer(id int) error {
+	mlog.Trace("Функция: connectBotToServer")
+	var err error
+	bot, ok := mbot[id]
+	if !ok {
+		err = errors.New(fmt.Sprintf("В mbot нет бота с указанным индексом. id = %d", id))
+		mlog.Error(err)
+		return err
+	}
+	if bot.Connected {
+		mlog.Warning("Бот уже подключен к серверу.")
+		return nil
+	}
+	bot.Connected = true
+	mbot[id] = bot
+	mlog.Trace("Функция: connectBotToServer. Бот подключен к серверу.")
+	return nil
+}
+
+func disconnectBotFromServer(id int) error {
+	mlog.Trace("Функция: disconnectBotFromServer")
+	var err error
+	bot, ok := mbot[id]
+	if !ok {
+		err = errors.New(fmt.Sprintf("В mbot нет бота с указанным индексом. id = %d", id))
+		mlog.Error(err)
+		return err
+	}
+	if !bot.Connected {
+		mlog.Warning("Бот уже отключен от сервера.")
+		return nil
+	}
+	bot.Connected = false
+	mbot[id] = bot
+	mlog.Trace("Функция: disconnectBotFromServer. Бот отключен от сервера.")
 	return nil
 }
